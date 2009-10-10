@@ -11,7 +11,8 @@ class RubygemTest < ActiveSupport::TestCase
     should_have_many :ownerships, :dependent => :destroy
     should_have_many :versions, :dependent => :destroy
     should_have_one :linkset, :dependent => :destroy
-    should_validate_uniqueness_of :name
+    should_belong_to :subdomain
+    should_validate_uniqueness_of :name, :scoped_to => :subdomain_id
     should_allow_values_for :name, "rails", "awesome42", "factory_girl", "rack-test"
 
     should "reorder versions with platforms properly" do

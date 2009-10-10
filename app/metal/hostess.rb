@@ -4,14 +4,16 @@ class Hostess < Sinatra::Default
   def serve(path, redirect = false)
     headers "Cache-Control" => "public, max-age=3"
 
+    s3_key = "#{subdomain}/#{request.path_info}"
+
     if Rails.env.development? || Rails.env.test?
       send_file(path)
     else
       if redirect
-        redirect File.join("http://s3.amazonaws.com", VaultObject.current_bucket, request.path_info)
+        redirect File.join("http://s3.amazonaws.com", VaultObject.current_bucket, s3_key)
       else
         # Query S3
-        result = VaultObject.value(request.path_info,
+        result = VaultObject.value(s3_key,
                                     :if_modified_since => env['HTTP_IF_MODIFIED_SINCE'],
                                     :if_none_match => env['HTTP_IF_NONE_MATCH'])
 
@@ -65,6 +67,11 @@ class Hostess < Sinatra::Default
   end
 
   def current_path
-    @current_path ||= Gemcutter.server_path(request.env["PATH_INFO"])
+    @current_path ||= Gemcutter.server_path(subdomain, request.env["PATH_INFO"])
+  end
+
+  def subdomain
+    subdomain = request.host.split('.').first
+    subdomain = nil if subdomain == 'gemcutter'
   end
 end

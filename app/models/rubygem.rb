@@ -11,9 +11,10 @@ class Rubygem < ActiveRecord::Base
     end
   end
   has_one :linkset, :dependent => :destroy
+  belongs_to :subdomain
 
   validates_presence_of :name
-  validates_uniqueness_of :name
+  validates_uniqueness_of :name, :scope => :subdomain_id
 
   named_scope :with_versions, :conditions => ["versions_count > 0"]
   named_scope :with_one_version, :conditions => ["versions_count = 1"]
@@ -24,6 +25,12 @@ class Rubygem < ActiveRecord::Base
     :include    => [:versions],
     :order      => "name asc" }
   }
+
+  named_scope :default_subdomain, :conditions => { :subdomain_id => nil }
+  named_scope :subdomain, lambda { |subdomain| {
+    :include    => :subdomain,
+    :conditions => { "subdomains.name" => subdomain }
+  }}
 
   def validate
     if name =~ /^[\d]+$/

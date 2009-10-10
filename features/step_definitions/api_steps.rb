@@ -53,6 +53,6 @@ end
 
 When /^I download the rubygem "([^\"]*)" version "([^\"]*)" (\d+) times$/ do |rubygem_name, version_number, count|
   count.to_i.times do
-    visit "/gems/#{rubygem_name}-#{version_number}.gem", :get
+    visit "http://gemcutter.test.host/gems/#{rubygem_name}-#{version_number}.gem", :get
   end
 end

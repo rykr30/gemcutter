@@ -39,6 +39,7 @@ class GemcutterTest < ActiveSupport::TestCase
       assert @cutter.respond_to?(:code)
       assert @cutter.respond_to?(:rubygem)
       assert @cutter.respond_to?(:body)
+      assert @cutter.respond_to?(:subdomain)
 
       assert_equal @user, @cutter.user
     end

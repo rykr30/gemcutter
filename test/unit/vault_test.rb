@@ -13,6 +13,7 @@ class VaultTest < ActiveSupport::TestCase
 
       class TestFS
         include Vault::FS
+        def subdomain_name; nil; end
       end
       @vault = TestFS.new
       stub(@vault).rubygem { @rubygem }

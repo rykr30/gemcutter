@@ -8,31 +8,31 @@ module Vault
     end
 
     def specs_index
-      Version.with_indexed.map(&:to_index)
+      Version.subdomain(subdomain_name).with_indexed.map(&:to_index)
     end
 
     def latest_index
-      Version.latest.release.map(&:to_index)
+      Version.subdomain(subdomain_name).latest.release.map(&:to_index)
     end
 
     def prerelease_index
-      Version.prerelease.map(&:to_index)
+      Version.subdomain(subdomain_name).prerelease.map(&:to_index)
     end
 
     def write_gem
-      cache_path = "gems/#{spec.original_name}.gem"
+      cache_path = "#{subdomain_name}/gems/#{spec.original_name}.gem"
       VaultObject.store(cache_path, body.string, OPTIONS)
 
-      quick_path = "quick/Marshal.#{Gem.marshal_version}/#{spec.original_name}.gemspec.rz"
-      Gemcutter.indexer.abbreviate spec
-      Gemcutter.indexer.sanitize spec
+      quick_path = "#{subdomain_name}/quick/Marshal.#{Gem.marshal_version}/#{spec.original_name}.gemspec.rz"
+      Gemcutter.indexer(subdomain_name).abbreviate spec
+      Gemcutter.indexer(subdomain_name).sanitize spec
       VaultObject.store(quick_path, Gem.deflate(Marshal.dump(spec)), OPTIONS)
     end
 
     def update_index
-      upload("specs.#{Gem.marshal_version}.gz", specs_index)
-      upload("latest_specs.#{Gem.marshal_version}.gz", latest_index)
-      upload("prerelease_specs.#{Gem.marshal_version}.gz", prerelease_index)
+      upload("#{subdomain_name}/specs.#{Gem.marshal_version}.gz", specs_index)
+      upload("#{subdomain_name}/latest_specs.#{Gem.marshal_version}.gz", latest_index)
+      upload("#{subdomain_name}/prerelease_specs.#{Gem.marshal_version}.gz", prerelease_index)
     end
 
     def upload(key, value)
@@ -53,7 +53,7 @@ module Vault
     end
 
     def source_path
-      Gemcutter.server_path("source_index")
+      Gemcutter.server_path(subdomain_name, "source_index")
     end
 
     def source_index
@@ -65,17 +65,18 @@ module Vault
     end
 
     def write_gem
-      cache_path = Gemcutter.server_path('gems', "#{spec.original_name}.gem")
+      cache_path = Gemcutter.server_path(subdomain_name, 'gems', "#{spec.original_name}.gem")
+      FileUtils.mkdir_p(File.dirname(cache_path))
       File.open(cache_path, "wb") do |f|
         f.write body.string
       end
       File.chmod 0644, cache_path
 
-      quick_path = Gemcutter.server_path("quick", "Marshal.#{Gem.marshal_version}", "#{spec.original_name}.gemspec.rz")
+      quick_path = Gemcutter.server_path(subdomain_name, "quick", "Marshal.#{Gem.marshal_version}", "#{spec.original_name}.gemspec.rz")
       FileUtils.mkdir_p(File.dirname(quick_path))
 
-      Gemcutter.indexer.abbreviate spec
-      Gemcutter.indexer.sanitize spec
+      Gemcutter.indexer(subdomain_name).abbreviate spec
+      Gemcutter.indexer(subdomain_name).sanitize spec
       File.open(quick_path, "wb") do |f|
         f.write Gem.deflate(Marshal.dump(spec))
       end
@@ -88,7 +89,7 @@ module Vault
         f.write Gem.deflate(Marshal.dump(source_index))
       end
 
-      Gemcutter.indexer.update_index(source_index)
+      Gemcutter.indexer(subdomain_name).update_index(source_index)
     end
   end
 end

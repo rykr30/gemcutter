@@ -22,6 +22,16 @@ class Version < ActiveRecord::Base
   named_scope :prerelease,      { :conditions => { :prerelease => true  }}
   named_scope :release,         { :conditions => { :prerelease => false }}
 
+  named_scope :default_subdomain, {
+    :include    => :rubygem,
+    :conditions => { "rubygems.subdomain_id" => nil }
+  }
+
+  named_scope :subdomain, lambda { |subdomain| {
+    :include    => { :rubygem => :subdomain },
+    :conditions => { "subdomains.name" => subdomain }
+  }}
+
   before_save :update_prerelease
   after_save  :reorder_versions
 

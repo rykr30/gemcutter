@@ -5,11 +5,12 @@ class Gemcutter
     include Vault::S3
   end
 
-  attr_reader :user, :spec, :message, :code, :rubygem, :body, :version, :version_id
+  attr_reader :user, :spec, :message, :code, :rubygem, :body, :version, :version_id, :subdomain
 
-  def initialize(user, body)
+  def initialize(user, body, subdomain_name = 'gemcutter')
     @user = user
     @body = StringIO.new(body.read)
+    @subdomain_name = subdomain_name
   end
 
   def process
@@ -20,6 +21,7 @@ class Gemcutter
     import? ||
     rubygem.pushable? ||
     rubygem.owned_by?(user) ||
+    subdomain.try(:belongs_to, user) ||
     notify("You do not have permission to push to this gem.", 403)
   end
 
@@ -66,12 +68,24 @@ class Gemcutter
   end
 
   def find
-    @rubygem = Rubygem.find_or_initialize_by_name(self.spec.name)
+    @subdomain = subdomain_for_name(@subdomain_name)
+    @rubygem = Rubygem.find_or_initialize_by_name_and_subdomain_id(self.spec.name, @subdomain.try(:id))
     @version = @rubygem.find_or_initialize_version_from_spec(spec)
   end
 
-  def self.server_path(*more)
-    File.expand_path(File.join(File.dirname(__FILE__), '..', 'server', *more))
+  def subdomain_for_name(name)
+    return nil if name == 'gemcutter'
+    subdomain = Subdomain.find_or_create_by_name(name)
+    subdomain.users << user if subdomain.users.count.zero?
+    subdomain
+  end
+
+  def subdomain_name
+    @subdomain.try(:name)
+  end
+
+  def self.server_path(subdomain_name = nil, *more)
+    File.expand_path(File.join(File.dirname(__FILE__), '..', 'server', subdomain_name || '', *more))
   end
 
   # Overridden so we don't get megabytes of the raw data printing out
@@ -80,8 +94,8 @@ class Gemcutter
     "<Gemcutter #{attrs.join(' ')}>"
   end
 
-  def self.indexer
-    indexer = Gem::Indexer.new(Gemcutter.server_path, :build_legacy => false)
+  def self.indexer(subdomain_name = nil)
+    indexer = Gem::Indexer.new(Gemcutter.server_path(subdomain_name), :build_legacy => false)
     def indexer.say(message) end
     indexer
   end
