@@ -33,6 +33,18 @@ Rails::Initializer.run do |config|
   config.gem "gchartrb",
     :lib     => "google_chart"
   config.gem "sinatra"
+  config.gem "rack-sparklines",
+    :version => "~> 1.1"
+
+  config.after_initialize do
+    dbconf = ActiveRecord::Base.connection_handler.connection_pools[ActiveRecord::Base.name].spec.config
+    require 'rack-sparklines/cachers/memory'
+    config.middleware.insert_before Rack::Lock, Rack::Sparklines,
+      :prefix  => "/sparks",
+      :handler => Sparkline::WebCsvHandler.new(dbconf[:sparklines] || "http://localhost:3000/stats"),
+      :cacher  => Rack::Sparklines::Cachers::Memory.new(5.minutes),
+      :spark   => {:step => 6, :height => 16}
+  end
 
   config.action_mailer.delivery_method = :smtp
 end

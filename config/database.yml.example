@@ -8,6 +8,7 @@ development:
   user: root
   pool: 5
   timeout: 5000
+  sparklines: "http://localhost:3000/stats"
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
@@ -24,6 +25,7 @@ production:
   database: gemcutter_production
   username: root
   password: <%= File.read(PASSWORD_FILE).chomp if File.readable? PASSWORD_FILE %>
+  sparklines: "http://gemcutter.org/stats"
 
 cucumber:
   <<: *TEST
