@@ -4,17 +4,17 @@
 <div class="statistics clearfix">
   <div class="border">
     <span><%= number_with_delimiter @number_of_gems %></span> gems
-    <%= statistic_sparkline @recent_gems_created %>
+    <img src="/sparks/recent_gems_created.png" width="179" height="16" alt="" />
   </div>
 
   <div class="border">
     <span><%= number_with_delimiter @number_of_downloads %></span> downloads
-    <%= statistic_sparkline @recent_downloads_created %>
+    <img src="/sparks/recent_downloads_created.png" width="179" height="16" alt="" />
   </div>
 
   <div class="border">
     <span><%= number_with_delimiter @number_of_users %></span> users
-    <%= statistic_sparkline @recent_users_created %>
+    <img src="/sparks/recent_users_created.png" width="179" height="16" alt="" />
   </div>
 
   <div class="border chart">
