@@ -8,4 +8,16 @@ class StatisticsController < ApplicationController
     @recent_users_created     = User.sparkline_data_from_past(30.days)
     @recent_downloads_created = Download.sparkline_data_from_past(30.days)
   end
+
+  def recent_gems_created
+    render :text => Rubygem.sparkline_data_from_past(30.days) * ","
+  end
+
+  def recent_users_created
+    render :text => User.sparkline_data_from_past(30.days) * ","
+  end
+
+  def recent_downloads_created
+    render :text => Download.sparkline_data_from_past(30.days) * ","
+  end
 end

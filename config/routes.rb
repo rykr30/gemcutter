@@ -10,7 +10,7 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resource  :dashboard,  :only => :show
   map.resource  :profile
-  map.resources :statistics, :only => :index, :as => "stats"
+  map.statistics '/stats/:action', :controller => 'statistics', :action => 'index'
 
   map.resource :migrate,
                :only         => [:create, :update],

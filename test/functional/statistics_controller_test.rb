@@ -54,4 +54,37 @@ class StatisticsControllerTest < ActionController::TestCase
       assert_received(Download) { |subject| subject.sparkline_data_from_past.with(30.days) }
     end
   end
+
+  context "on GET to recent_gems_created" do
+    setup do
+      stub(Rubygem).sparkline_data_from_past { [10, 0] }
+      get :recent_gems_created
+    end
+
+    should "return comma-separated values" do
+      assert_equal "10,0", @response.body
+    end
+  end
+
+  context "on GET to recent_users_created" do
+    setup do
+      stub(User).sparkline_data_from_past { [10, 0] }
+      get :recent_users_created
+    end
+
+    should "return comma-separated values" do
+      assert_equal "10,0", @response.body
+    end
+  end
+
+  context "on GET to recent_downloads_created" do
+    setup do
+      stub(Download).sparkline_data_from_past { [10, 0] }
+      get :recent_downloads_created
+    end
+
+    should "return comma-separated values" do
+      assert_equal "10,0", @response.body
+    end
+  end
 end
